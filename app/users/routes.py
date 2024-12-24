@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List  
 from app.users.models import User
-from app.users.schemas import UserCreate, UserResponse
+from app.users.schemas import UserCreate, UserResponse ,LoginRequest
 from app.db.database import get_db
 from app.utils import hash_password, verify_password, create_access_token
 from app.users.schemas import Role  
@@ -41,7 +41,11 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login")
-def login(email: str, password: str, db: Session = Depends(get_db)):
+def login(request: LoginRequest, db: Session = Depends(get_db)):
+    # Récupérer l'email et le mot de passe depuis le corps de la requête
+    email = request.email
+    password = request.password
+
     # Vérifier si l'utilisateur existe
     user = db.query(User).filter(User.email == email).first()
     if not user:
@@ -67,7 +71,6 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": user.email, **user_data})
     
     return {"access_token": access_token, "user": user_data}
-
 @router.get("/users", response_model=List[UserResponse])
 def get_users(db: Session = Depends(get_db), current_user: User = Depends(get_admin_user)):
     # Récupérer tous les utilisateurs

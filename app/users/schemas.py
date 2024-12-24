@@ -5,6 +5,10 @@ class Role(str, Enum):
     user = "user"
     admin = "admin"
 
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
 class UserCreate(BaseModel):
     username: str
     email: str
